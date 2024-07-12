@@ -14,9 +14,11 @@ class FeatureFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => 'listings',
-            'value' => 50,
-            'sort_order' => 1,
+            'name' => 'Escenarios',
+            'description' => '',
+            'consumable' => true,
+            'resettable_period' => 0,
+            'resettable_interval' => 'year'
         ];
     }
 }

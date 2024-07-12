@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
-use Laravelcm\Subscriptions\SubscriptionServiceProvider;
-use Orchestra\Testbench\TestCase as BaseTestCase;
 use Tests\Models\User;
+use Laravelcm\Subscriptions\SubscriptionServiceProvider;
+use Orchestra\Testbench\TestCase as Orchestra;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-abstract class TestCase extends BaseTestCase
+class TestCase extends Orchestra
 {
-    use LazilyRefreshDatabase;
+    // use RefreshDatabase;
 
     protected function getPackageProviders($app): array
     {

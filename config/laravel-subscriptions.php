@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-use Laravelcm\Subscriptions\Models\Feature;
 use Laravelcm\Subscriptions\Models\Plan;
+use Laravelcm\Subscriptions\Models\Feature;
+use Laravelcm\Subscriptions\Models\FeaturePlan;
 use Laravelcm\Subscriptions\Models\Subscription;
 use Laravelcm\Subscriptions\Models\SubscriptionUsage;
 
@@ -20,6 +21,7 @@ return [
     'tables' => [
         'plans' => 'plans',
         'features' => 'features',
+        'feature_plan' => 'feature_plan',
         'subscriptions' => 'subscriptions',
         'subscription_usage' => 'subscription_usage',
     ],
@@ -38,6 +40,7 @@ return [
     'models' => [
         'plan' => Plan::class,
         'feature' => Feature::class,
+        'feature_plan' => FeaturePlan::class,
         'subscription' => Subscription::class,
         'subscription_usage' => SubscriptionUsage::class,
     ],

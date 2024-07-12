@@ -6,8 +6,8 @@ namespace Laravelcm\Subscriptions\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -15,25 +15,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * Laravelcm\Subscriptions\Models\SubscriptionUsage.
  *
  * @property int $id
+ * @property int $used
+ * @property \Carbon\Carbon|null $expired_at
  * @property int $subscription_id
  * @property int $feature_id
- * @property int $used
- * @property \Carbon\Carbon|null $valid_until
  * @property \Carbon\Carbon|null $created_at
  * @property \Carbon\Carbon|null $updated_at
  * @property \Carbon\Carbon|null $deleted_at
  * @property-read \Laravelcm\Subscriptions\Models\Feature $feature
  * @property-read \Laravelcm\Subscriptions\Models\Subscription $subscription
  *
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\SubscriptionUsage byFeatureSlug($featureSlug)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\SubscriptionUsage whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\SubscriptionUsage whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\SubscriptionUsage whereFeatureId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\SubscriptionUsage whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\SubscriptionUsage whereSubscriptionId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\SubscriptionUsage whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\SubscriptionUsage whereUsed($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\SubscriptionUsage whereValidUntil($value)
  *
  */
 class SubscriptionUsage extends Model
@@ -42,17 +33,17 @@ class SubscriptionUsage extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'used',
+        'expired_at',
         'subscription_id',
         'feature_id',
-        'used',
-        'valid_until',
     ];
 
     protected $casts = [
+        'used' => 'integer',
+        'expired_at' => 'datetime',
         'subscription_id' => 'integer',
         'feature_id' => 'integer',
-        'used' => 'integer',
-        'valid_until' => 'datetime',
         'deleted_at' => 'datetime',
     ];
 
@@ -71,20 +62,20 @@ class SubscriptionUsage extends Model
         return $this->belongsTo(config('laravel-subscriptions.models.subscription'), 'subscription_id', 'id', 'subscription');
     }
 
-    public function scopeByFeatureSlug(Builder $builder, string $featureSlug): Builder
-    {
-        $model = config('laravel-subscriptions.models.feature', Feature::class);
-        $feature = tap(new $model())->where('slug', $featureSlug)->first();
-
-        return $builder->where('feature_id', $feature ? $feature->getKey() : null);
-    }
-
     public function expired(): bool
     {
-        if ( ! $this->valid_until) {
+        if (!$this->expired_at) {
             return false;
         }
 
-        return Carbon::now()->gte($this->valid_until);
+        return Carbon::now()->gte($this->expired_at);
+    }
+
+    public function scopeByFeatureSlug(Builder $builder, string $feature): Builder
+    {
+        $model = config('laravel-subscriptions.models.feature', Feature::class);
+        $feature = tap(new $model())->where('slug', $feature)->first();
+
+        return $builder->where('feature_id', $feature ? $feature->getKey() : null);
     }
 }

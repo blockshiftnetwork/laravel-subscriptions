@@ -6,106 +6,60 @@ namespace Laravelcm\Subscriptions\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Laravelcm\Subscriptions\Traits\HasSlug;
-use Laravelcm\Subscriptions\Traits\HasTranslations;
-use Laravelcm\Subscriptions\Services\Period;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravelcm\Subscriptions\Traits\BelongsToPlan;
-use Spatie\EloquentSortable\Sortable;
-use Spatie\EloquentSortable\SortableTrait;
+use Laravelcm\Subscriptions\Traits\HasSlug;
+use Laravelcm\Subscriptions\Services\Period;
 use Spatie\Sluggable\SlugOptions;
 
 /**
- * Laravelcm\Subscriptions\Models\PlanFeature.
+ * Laravelcm\Subscriptions\Models\Feature.
  *
  * @property int $id
- * @property int $plan_id
+ * @property string $name
+ * @property string $description
  * @property string $slug
- * @property array $title
- * @property array $description
- * @property string $value
+ * @property bool $consumable
  * @property int $resettable_period
  * @property string $resettable_interval
- * @property int $sort_order
+ * @property int $plan_id
  * @property \Carbon\Carbon|null $created_at
  * @property \Carbon\Carbon|null $updated_at
  * @property \Carbon\Carbon|null $deleted_at
  * @property-read \Laravelcm\Subscriptions\Models\Plan $plan
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravelcm\Subscriptions\Models\SubscriptionUsage[] $usage
  *
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature byPlanId($planId)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature ordered($direction = 'asc')
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature whereTitle($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature wherePlanId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature whereResettableInterval($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature whereResettablePeriod($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature whereSlug($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature whereSortOrder($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|\Laravelcm\Subscriptions\Models\Feature whereValue($value)
  */
-class Feature extends Model implements Sortable
+class Feature extends Model
 {
     use BelongsToPlan;
     use HasFactory;
     use HasSlug;
-    use HasTranslations;
     use SoftDeletes;
-    use SortableTrait;
 
     protected $fillable = [
-        'plan_id',
-        'slug',
         'name',
         'description',
-        'value',
+        'slug',
+        'consumable',
         'resettable_period',
         'resettable_interval',
-        'sort_order',
     ];
 
     protected $casts = [
-        'plan_id' => 'integer',
         'slug' => 'string',
-        'value' => 'string',
+        'consumable' => 'boolean',
         'resettable_period' => 'integer',
         'resettable_interval' => 'string',
-        'sort_order' => 'integer',
         'deleted_at' => 'datetime',
-    ];
-
-    /**
-     * The attributes that are translatable.
-     *
-     * @var array
-     */
-    public $translatable = [
-        'name',
-        'description',
-    ];
-
-    public array $sortable = [
-        'order_column_name' => 'sort_order',
     ];
 
     public function getTable(): string
     {
         return config('laravel-subscriptions.tables.features');
-    }
-
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        static::deleted(function (Feature $feature): void {
-            $feature->usage()->delete();
-        });
     }
 
     public function getSlugOptions(): SlugOptions
@@ -116,9 +70,19 @@ class Feature extends Model implements Sortable
             ->saveSlugsTo('slug');
     }
 
+    public function plans(): belongsToMany
+    {
+        return $this->belongsToMany(config('laravel-subscriptions.models.plan'))->using(config('laravel-subscriptions.models.feature_plan'));
+    }
+
     public function usage(): HasMany
     {
         return $this->hasMany(config('laravel-subscriptions.models.subscription_usage'));
+    }
+
+    public function isCosumable(): bool
+    {
+        return $this->consumable;
     }
 
     public function getResetDate(?Carbon $dateFrom = null): Carbon

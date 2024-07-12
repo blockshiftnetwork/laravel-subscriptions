@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Tests\Models;
 
 use Tests\Database\Factories\PlanFactory;
+use Laravelcm\Subscriptions\Models\Plan as ModelPlan;
 
-class Plan extends \Laravelcm\Subscriptions\Models\Plan
+class Plan extends ModelPlan
 {
     protected static function newFactory(): PlanFactory
     {

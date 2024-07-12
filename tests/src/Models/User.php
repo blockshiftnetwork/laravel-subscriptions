@@ -6,13 +6,13 @@ namespace Tests\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Laravelcm\Subscriptions\Traits\HasPlanSubscriptions;
+use Laravelcm\Subscriptions\Traits\HasSubscriptions;
 use Tests\Database\Factories\UserFactory;
 
 final class User extends Authenticatable
 {
     use HasFactory;
-    use HasPlanSubscriptions;
+    use HasSubscriptions;
 
     /**
      * The attributes that are mass assignable.
